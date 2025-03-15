@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.service import Service
 
+
 # Global URL (change if needed)
 URL = "https://ttb.utoronto.ca/"
 
@@ -56,8 +57,7 @@ def process_pages(thread_index, total_threads=5):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
-    # Use a unique remote debugging port per thread (e.g., 9222, 9223, 9224, etc.)
-    options.add_argument(f"--remote-debugging-port={9222 + thread_index}")
+    options.add_argument("--remote-debugging-port=9222")
     
     from webdriver_manager.chrome import ChromeDriverManager
 
@@ -114,7 +114,7 @@ def process_pages(thread_index, total_threads=5):
                 WebDriverWait(driver, 10).until(EC.element_to_be_clickable(button))
                 driver.execute_script("arguments[0].scrollIntoView(true);", button)
                 button.click()
-                time.sleep(0.5)
+                time.sleep(0.1)
             except Exception as e:
                 print(f"Thread {thread_index}: Error clicking accordion button: {e}")
         
@@ -184,7 +184,7 @@ def process_pages(thread_index, total_threads=5):
             next_page_link = next_page_links[0]
             driver.execute_script("arguments[0].scrollIntoView(true);", next_page_link)
             next_page_link.click()
-            time.sleep(2)
+            time.sleep(0.5)
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "app-course"))
             )
