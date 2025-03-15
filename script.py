@@ -1,14 +1,16 @@
-import time
-import json
-from concurrent.futures import ThreadPoolExecutor
-from selenium import webdriver 
+from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
+import time
+import json
+import tempfile
+import shutil
+import traceback  # Import the traceback module
 
-from webdriver_manager.chrome import ChromeDriverManager
 
 # Global URL (change if needed)
 URL = "https://ttb.utoronto.ca/"
@@ -59,6 +61,7 @@ def process_pages(thread_index, total_threads=5):
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--remote-debugging-port=9222")
     
+    from webdriver_manager.chrome import ChromeDriverManager
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     
