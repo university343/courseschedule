@@ -22,17 +22,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip
-          # Download the Chrome .deb package
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          # Install Chrome using apt-get (which handles dependencies)
-          sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
-          # Download Chromedriver matching Chrome version 134
+          # Use apt-get to install the .deb and ignore non-fatal errors (exit code 8)
+          sudo apt-get install -y ./google-chrome-stable_current_amd64.deb || true
           wget -q "https://chromedriver.storage.googleapis.com/$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_134)/chromedriver_linux64.zip"
           unzip chromedriver_linux64.zip
           sudo mv chromedriver /usr/local/bin/chromedriver
           sudo chmod +x /usr/local/bin/chromedriver
-          # Install Python dependencies
           pip install -r requirements.txt
+
 
       - name: Run scraping script
         run: python script.py
