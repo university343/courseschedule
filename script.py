@@ -7,6 +7,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import time
 import json
+import tempfile
+import shutil
 
 # Import ChromeDriverManager from webdriver_manager
 from webdriver_manager.chrome import ChromeDriverManager
@@ -18,8 +20,9 @@ options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--remote-debugging-port=9222")
 # (Removed the --user-data-dir argument to avoid conflicts)
+temp_dir = tempfile.mkdtemp()
+options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
 
-# Initialize the Chrome driver using webdriver_manager to fetch the matching Chromedriver version.
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 try:
@@ -138,3 +141,5 @@ except Exception as e:
 
 finally:
     driver.quit()
+    shutil.rmtree(tempfile.mkdtemp(), ignore_errors=True)
+
