@@ -18,17 +18,29 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies and Chrome
+      - name: Install dependencies, Chrome, and Chromedriver
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip
+      
+          # Remove any existing installations of Chrome
+          sudo apt-get purge --yes google-chrome-stable || true
+          sudo rm -rf /usr/bin/google-chrome || true
+      
+          # Install Google Chrome
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          # Use apt-get to install the .deb and ignore non-fatal errors (exit code 8)
-          sudo apt-get install -y ./google-chrome-stable_current_amd64.deb || true
-          wget -q "https://chromedriver.storage.googleapis.com/$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_134)/chromedriver_linux64.zip"
+          sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get install -fy
+          rm google-chrome-stable_current_amd64.deb
+      
+          # Install matching Chromedriver
+          CHROME_VERSION=$(google-chrome --version | grep -oP '[\d.]+')
+          CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION%%.*}")
+          wget "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
           unzip chromedriver_linux64.zip
           sudo mv chromedriver /usr/local/bin/chromedriver
           sudo chmod +x /usr/local/bin/chromedriver
+      
+          # Install Python dependencies
           pip install -r requirements.txt
 
 
