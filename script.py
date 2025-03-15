@@ -48,9 +48,14 @@ def process_pages(thread_index, total_threads=5):
       - Scrapes the current page (expanding accordions first),
         then clicks 'Next' and jumps ahead (total_threads pages per cycle).
     """
-    # Configure Selenium as in your original code
+        # Configure Selenium as in your original code
     options = Options()
-    options.headless = True
+    options.add_argument("--headless=new")  # new headless mode, more stable
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--remote-debugging-port=9222")
     driver = webdriver.Chrome(options=options)
     
     # Load the page and disable animations
