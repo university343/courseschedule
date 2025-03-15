@@ -34,9 +34,6 @@ jobs:
           # Install Python dependencies
           pip install -r requirements.txt
 
-
-
-
       - name: Run scraping script
         run: python script.py
 
@@ -48,11 +45,10 @@ jobs:
           git commit -m "Update course_data.json" || echo "No changes to commit"
 
       - name: Upload screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: screenshots
           path: "*.png"
-
 
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
