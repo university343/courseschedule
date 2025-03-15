@@ -26,6 +26,7 @@ options.add_argument("--window-size=1920,1080")
 options.add_argument("--remote-debugging-port=9222")
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+driver.get('http://selenium.dev')
 
 try:
     # Load the initial page (adjust the URL if needed)
