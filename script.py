@@ -16,7 +16,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # Configure Selenium for headless operation with extra options for GitHub Actions
 options = Options()
-#options.add_argument("--headless=new")  # new headless mode, more stable
+options.add_argument("--headless=new")  # new headless mode, more stable
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--disable-gpu")
@@ -26,21 +26,77 @@ options.add_argument("--remote-debugging-port=9222")
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 try:
-    # Load the initial page (adjust the URL if needed)
+        # Load the initial page (adjust the URL as needed)
     url = "https://ttb.utoronto.ca/"  # Replace with the correct starting URL
     driver.get(url)
-
-    # Wait for course elements to load
-    WebDriverWait(driver, 20).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, "app-course"))
+    
+    
+    
+    
+    
+    # Wait for the division dropdown to be present
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "division"))
     )
-
-    # Initialize a list to store course data from all pages
+    # Wait until the custom checkbox options are present in the dropdown
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located(
+            (By.CSS_SELECTOR, "#division-combo-bottom-container app-ttb-option")
+        )
+    )
+    # Locate all division options (custom checkboxes) and click each one
+    division_options = driver.find_elements(By.CSS_SELECTOR, "#division-combo-bottom-container app-ttb-option")
+    print("Found division options:", len(division_options))
+    for option in division_options:
+        driver.execute_script("arguments[0].scrollIntoView(true);", option)
+        driver.execute_script("arguments[0].click();", option)
+        time.sleep(0.5)  # Optional: slight pause after clicking each option
+    
+    
+    
+    
+    """
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "session"))
+    )
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_all_elements_located(
+            (By.CSS_SELECTOR, "#session-combo-bottom-container app-ttb-option")
+        )
+    )
+    session_options = driver.find_elements(By.CSS_SELECTOR, "#session-combo-bottom-container app-ttb-option")
+    print("Found session options:", len(session_options))
+    for option in session_options:
+        driver.execute_script("arguments[0].scrollIntoView(true);", option)
+        driver.execute_script("arguments[0].click();", option)
+        time.sleep(0.5)
+    """
+    
+    
+    # Wait until the "Search" button is clickable
+    search_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Search']"))
+    )
+    
+    # Optionally scroll the button into view
+    driver.execute_script("arguments[0].scrollIntoView(true);", search_button)
+    
+    # Click using JavaScript to ensure it’s triggered correctly
+    driver.execute_script("arguments[0].click();", search_button)
+    
+    
+    
+    
+    
+    
+    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, "app-course")))
+    
+    # Initialize a list to store all course data from all pages
     all_course_data = []
-
-    # Loop through pages
+    
+    # Start the loop to process each page
     while True:
-    # Find and click all accordion buttons to expand course details
+        # Find and click all accordion buttons to expand course details
         accordion_buttons = driver.find_elements(By.CSS_SELECTOR, "button.accordion-button")
         for button in accordion_buttons:
             try:
@@ -137,12 +193,10 @@ try:
             time.sleep(2)
             # Wait for the new page to load with course elements
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "app-course")))
-
+    
     # Save all collected data to a JSON file
     with open('course_data.json', 'w') as f:
         json.dump(all_course_data, f, indent=4)
-    
-        print("Scraping complete! Data saved to course_data.json")
 
 except Exception as e:
     print(f"An error occurred: {e}")
