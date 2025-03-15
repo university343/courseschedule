@@ -105,7 +105,7 @@ try:
                 # Scroll to the button and click it
                 driver.execute_script("arguments[0].scrollIntoView(true);", button)
                 button.click()
-                time.sleep(1)  # Brief pause to allow content to expand
+                time.sleep(0.5)  # Brief pause to allow content to expand
             except Exception as e:
                 print(f"Error clicking accordion button: {e}")
     
@@ -195,7 +195,7 @@ try:
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "app-course")))
     
     # Save all collected data to a JSON file
-    with open('course_data.json', 'w') as f:
+    with open('course_data_fall_winter_2025.json', 'w') as f:
         json.dump(all_course_data, f, indent=4)
 
 except Exception as e:
