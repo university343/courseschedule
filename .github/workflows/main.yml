@@ -20,36 +20,40 @@ jobs:
 
       - name: Install Chrome, Chromedriver, and Dependencies
         run: |
+          # Disable exit-on-error so dpkg errors don’t abort the job
+          set +e
           sudo apt-get update
           sudo apt-get install -y wget unzip curl
       
           # Remove any existing Chrome installations
           sudo apt-get purge --yes google-chrome-stable || true
+          sudo rm -rf /usr/bin/google-chrome || true
       
-          # Install Chrome
+          # Download and install Chrome
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -f install -y
           rm google-chrome-stable_current_amd64.deb
       
-          # Get the exact installed Chrome version
+          # Re-enable exit-on-error
+          set -e
+      
+          # Get the installed Chrome version and extract the major version
           CHROME_VERSION=$(google-chrome --version | grep -oP '[\d.]+' | head -1)
           CHROME_MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d '.' -f 1)
       
-          # Fetch the latest matching Chromedriver version
+          # Fetch the matching Chromedriver version
           CHROMEDRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_${CHROME_MAJOR_VERSION}")
       
           # Download and install Chromedriver
           wget -q "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
           unzip chromedriver_linux64.zip
-          sudo mv chromedriver /usr/local/bin/
+          sudo mv chromedriver /usr/local/bin/chromedriver
           sudo chmod +x /usr/local/bin/chromedriver
       
           # Install Python dependencies
           pip install -r requirements.txt
 
-      
-          # Install Python dependencies
-          pip install -r requirements.txt
+
 
 
       - name: Run scraping script
