@@ -211,11 +211,22 @@ def main():
         for future in futures:
             all_course_data.extend(future.result())
     
-    # Save all collected data to a JSON file
-    with open('course_data.json', 'w') as f:
-        json.dump(all_course_data, f, indent=4)
-    
-    print("Scraping complete! Data saved to course_data.json.")
+    # Upload data to Cloud Firestore
+    try:
+        import firebase_admin
+        from firebase_admin import credentials, firestore
+        # Initialize Firebase Admin with the service account key file
+        cred = credentials.Certificate("serviceAccountKey.json")
+        firebase_admin.initialize_app(cred)
+        
+        db = firestore.client()
+        collection_ref = db.collection('courses')
+        # Upload each course record as a separate document in Firestore.
+        for course in all_course_data:
+            collection_ref.add(course)
+        print("Data uploaded to Firestore successfully!")
+    except Exception as e:
+        print("Failed to upload data to Firestore:", e)
 
 if __name__ == "__main__":
     main()
