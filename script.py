@@ -31,7 +31,7 @@ try:
     driver.get(url)
 
     # Wait for course elements to load
-    WebDriverWait(driver, 20).until(
+    WebDriverWait(driver, 2).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "app-course"))
     )
 
