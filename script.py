@@ -3,10 +3,16 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
+import traceback
+import tempfile
+import shutil
+
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Global URL
 URL = "https://ttb.utoronto.ca/"
@@ -23,11 +29,12 @@ def disable_animations(driver):
 
 def initialize_driver():
     options = Options()
-    options.headless = True
-    driver = webdriver.Chrome(options=options)
-    driver.get(URL)
-    disable_animations(driver)
-    return driver
+    options.add_argument("--headless=new")  # new headless mode, more stable
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--remote-debugging-port=9222")
 
 def select_division_options(driver):
     # Wait for and click the division dropdown
@@ -151,7 +158,7 @@ def click_next(driver, clicks=1):
             )
             driver.execute_script("arguments[0].scrollIntoView(true);", next_link)
             driver.execute_script("arguments[0].click();", next_link)
-            time.sleep(0.5)  # Wait for the next page to load
+            time.sleep(0.2)  # Wait for the next page to load
         except Exception as e:
             print("No more pages or error clicking next:", e)
             return False
@@ -164,7 +171,8 @@ def process_pages(thread_index, total_threads=5):
       2. Advance to a starting page based on thread_index (0 -> page 1, 1 -> page 2, etc.).
       3. Scrape the current page and then jump ahead total_threads pages.
     """
-    driver = initialize_driver()
+    initialize_driver()
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     collected_data = []
     try:
         select_division_options(driver)
