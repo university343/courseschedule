@@ -9,7 +9,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.service import Service
 
-
 # Global URL (change if needed)
 URL = "https://ttb.utoronto.ca/"
 
@@ -57,7 +56,8 @@ def process_pages(thread_index, total_threads=5):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
-    options.add_argument("--remote-debugging-port=9222")
+    # Use a unique remote debugging port per thread (e.g., 9222, 9223, 9224, etc.)
+    options.add_argument(f"--remote-debugging-port={9222 + thread_index}")
     
     from webdriver_manager.chrome import ChromeDriverManager
 
