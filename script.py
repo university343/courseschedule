@@ -1,16 +1,12 @@
-from selenium import webdriver
+import time
+import json
+from concurrent.futures import ThreadPoolExecutor
+from selenium import webdriver 
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-import time
-import json
-import tempfile
-import shutil
-import traceback  # Import the traceback module
-
 
 # Global URL (change if needed)
 URL = "https://ttb.utoronto.ca/"
