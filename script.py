@@ -17,6 +17,7 @@ options.headless = True
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--remote-debugging-port=9222")
+options.add_argument("--user-data-dir=/tmp/chrome-user-data")  # Use a unique temporary profile directory
 
 # Use webdriver_manager to automatically install the correct chromedriver version.
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
