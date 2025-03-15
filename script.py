@@ -172,7 +172,7 @@ def process_pages(thread_index, total_threads=5):
       3. Scrape the current page and then jump ahead total_threads pages.
     """
     initialize_driver()
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=Options)
     collected_data = []
     try:
         select_division_options(driver)
