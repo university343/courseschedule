@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.service import Service
-
+import threading
 
 # Global URL (change if needed)
 URL = "https://ttb.utoronto.ca/"
@@ -20,6 +20,9 @@ css.type = "text/css";
 css.innerHTML = "* { animation: none !important; transition: none !important; }";
 document.head.appendChild(css);
 """
+
+# Create a lock to ensure that driver installation is not done concurrently
+driver_install_lock = threading.Lock()
 
 def click_next(driver, num_clicks=1):
     """Click the 'Next' link num_clicks times.
@@ -57,11 +60,18 @@ def process_pages(thread_index, total_threads=5):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
+    # (Optional) To avoid remote debugging port conflicts in parallel runs,
+    # you can assign a unique port per thread, e.g.:
+    # options.add_argument(f"--remote-debugging-port={9222 + thread_index}")
     options.add_argument("--remote-debugging-port=9222")
     
+    # Import ChromeDriverManager
     from webdriver_manager.chrome import ChromeDriverManager
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    # Ensure only one thread installs the driver at a time
+    with driver_install_lock:
+        driver_path = ChromeDriverManager().install()
+    driver = webdriver.Chrome(service=Service(driver_path), options=options)
     
     # Load the page and disable animations
     driver.get(URL)
