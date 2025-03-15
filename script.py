@@ -23,6 +23,7 @@ options.add_argument("--remote-debugging-port=9222")
 temp_dir = tempfile.mkdtemp()
 options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
 
+
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 try:
