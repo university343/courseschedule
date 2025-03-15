@@ -24,8 +24,6 @@ options.add_argument(f"--user-data-dir={tmp_user_data_dir}")
 options.add_argument("--disable-gpu")
 options.add_argument("--window-size=1920,1080")
 options.add_argument("--remote-debugging-port=9222")
-options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
-
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
@@ -48,7 +46,8 @@ try:
         accordion_buttons = driver.find_elements(By.CSS_SELECTOR, "button.accordion-button")
         for button in accordion_buttons:
             try:
-                WebDriverWait(driver, 10).until(EC.element_to_be_clickable(button))
+                # Wait until the button is clickable
+                WebDriverWait(driver, 10).until(lambda d: button.is_enabled() and button.is_displayed())
                 driver.execute_script("arguments[0].scrollIntoView(true);", button)
                 button.click()
                 time.sleep(1)  # Allow time for content to expand
@@ -145,5 +144,4 @@ except Exception as e:
 
 finally:
     driver.quit()
-    shutil.rmtree(tempfile.mkdtemp(), ignore_errors=True)
-
+    shutil.rmtree(tmp_user_data_dir, ignore_errors=True)
