@@ -47,6 +47,13 @@ jobs:
           git add course_data.json
           git commit -m "Update course_data.json" || echo "No changes to commit"
 
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v3
+        with:
+          name: screenshots
+          path: "*.png"
+
+
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
         with:
