@@ -1,11 +1,15 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import time
 import json
+
+# Import ChromeDriverManager from webdriver_manager
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Configure Selenium for headless operation with extra options for GitHub Actions
 options = Options()
@@ -14,7 +18,8 @@ options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--remote-debugging-port=9222")
 
-driver = webdriver.Chrome(options=options)
+# Use webdriver_manager to automatically install the correct chromedriver version.
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 try:
     # Load the initial page (adjust the URL if needed)
