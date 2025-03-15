@@ -7,7 +7,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import time
 import json
-import uuid  # Import uuid to generate unique directory names
 
 # Import ChromeDriverManager from webdriver_manager
 from webdriver_manager.chrome import ChromeDriverManager
@@ -18,11 +17,9 @@ options.headless = True
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--remote-debugging-port=9222")
-# Generate a unique user-data-dir to avoid conflicts
-unique_dir = f"/tmp/chrome-user-data-{uuid.uuid4()}"
-options.add_argument(f"--user-data-dir={unique_dir}")
+# (Removed the --user-data-dir argument to avoid conflicts)
 
-# Initialize the Chrome driver using webdriver_manager
+# Initialize the Chrome driver using webdriver_manager to fetch the matching Chromedriver version.
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 try:
