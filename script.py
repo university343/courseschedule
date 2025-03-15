@@ -50,8 +50,12 @@ def process_pages(thread_index, total_threads=5):
     """
     # Configure Selenium as in your original code
     options = Options()
-    options.headless = True
-    driver = webdriver.Chrome(options=options)
+    options.add_argument("--headless=new")  # new headless mode, more stable
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--remote-debugging-port=9222")
     
     # Load the page and disable animations
     driver.get(URL)
