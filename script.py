@@ -60,10 +60,6 @@ def process_pages(thread_index, total_threads=5):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
-    # (Optional) To avoid remote debugging port conflicts in parallel runs,
-    # you can assign a unique port per thread, e.g.:
-    # options.add_argument(f"--remote-debugging-port={9222 + thread_index}")
-    options.add_argument("--remote-debugging-port=9222")
     
     # Import ChromeDriverManager
     from webdriver_manager.chrome import ChromeDriverManager
