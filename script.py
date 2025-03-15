@@ -14,13 +14,16 @@ import shutil
 from webdriver_manager.chrome import ChromeDriverManager
 
 # Configure Selenium for headless operation with extra options for GitHub Actions
+tmp_user_data_dir = tempfile.mkdtemp()
+
 options = Options()
-options.add_argument("--headless")
+options.add_argument("--headless=new")  # new headless mode, more stable
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
+options.add_argument(f"--user-data-dir={tmp_user_data_dir}")
+options.add_argument("--disable-gpu")
+options.add_argument("--window-size=1920,1080")
 options.add_argument("--remote-debugging-port=9222")
-# (Removed the --user-data-dir argument to avoid conflicts)
-temp_dir = tempfile.mkdtemp()
 options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
 
 
