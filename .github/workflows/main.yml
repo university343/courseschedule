@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions-checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -25,12 +25,7 @@ jobs:
           # Download and install Google Chrome
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
-          # Download the latest Chromedriver (this may need adjustment if version mismatches occur)
-          wget -q "https://chromedriver.storage.googleapis.com/$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip"
-          unzip chromedriver_linux64.zip
-          sudo mv chromedriver /usr/local/bin/chromedriver
-          sudo chmod +x /usr/local/bin/chromedriver
-      
+
           # Install Python dependencies
           pip install -r requirements.txt
 
@@ -43,12 +38,6 @@ jobs:
           git config --local user.name "GitHub Action"
           git add course_data.json
           git commit -m "Update course_data.json" || echo "No changes to commit"
-
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v3.1.2
-        with:
-          name: screenshots
-          path: "*.png"
 
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
