@@ -16,7 +16,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # Configure Selenium for headless operation with extra options for GitHub Actions
 options = Options()
-options.add_argument("--headless=new")  # new headless mode, more stable
+#options.add_argument("--headless=new")  # new headless mode, more stable
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--disable-gpu")
@@ -31,7 +31,7 @@ try:
     driver.get(url)
 
     # Wait for course elements to load
-    WebDriverWait(driver, 2).until(
+    WebDriverWait(driver, 20).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "app-course"))
     )
 
