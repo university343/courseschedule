@@ -15,7 +15,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # Configure Selenium for headless operation with extra options for GitHub Actions
 options = Options()
-options.headless = True
+options.add_argument("--headless")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--remote-debugging-port=9222")
