@@ -1,4 +1,4 @@
-name: Weekly Scraping
+name: Weekly Scraping 
 
 on:
   schedule:
@@ -26,6 +26,11 @@ jobs:
 
           # Install Python dependencies
           pip install -r requirements.txt
+
+      - name: Write Firebase Credentials File
+        run: echo "$FIREBASE_SERVICE_ACCOUNT" > serviceAccountKey.json
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
       - name: Run scraping script
         run: python script.py
