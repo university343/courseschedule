@@ -203,7 +203,7 @@ def process_pages(thread_index, total_threads=5):
     return thread_data
 
 def main():
-    total_threads = 10
+    total_threads = 5
     all_course_data = []
     # Run 5 threads in parallel using ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=total_threads) as executor:
