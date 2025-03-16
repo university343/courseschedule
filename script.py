@@ -203,7 +203,7 @@ def process_pages(thread_index, total_threads=5):
     return thread_data
 
 def main():
-    total_threads = 5
+    total_threads = 10
     all_course_data = []
     # Run 5 threads in parallel using ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=total_threads) as executor:
@@ -211,20 +211,42 @@ def main():
         for future in futures:
             all_course_data.extend(future.result())
     
-    # Upload data to Cloud Firestore
+        # Upload courses in chunks to Firestore
     try:
         import firebase_admin
         from firebase_admin import credentials, firestore
-        # Initialize Firebase Admin with the service account key file
+        # Initialize Firebase Admin with your service account key file
         cred = credentials.Certificate("serviceAccountKey.json")
         firebase_admin.initialize_app(cred)
         
         db = firestore.client()
         collection_ref = db.collection('courses')
-        # Upload each course record as a separate document in Firestore.
+        
+        MAX_SIZE = 1048576  # 1 MiB in bytes
+        chunk = []
+        chunk_index = 1
+        
         for course in all_course_data:
-            collection_ref.add(course)
-        print("Data uploaded to Firestore successfully!")
+            # Try adding this course to the current chunk
+            temp_chunk = chunk + [course]
+            temp_json = json.dumps(temp_chunk, indent=4)
+            size_bytes = len(temp_json.encode('utf-8'))
+            if size_bytes > MAX_SIZE:
+                # Upload the current chunk since adding this course would exceed the limit.
+                doc_id = f'chunk_{chunk_index}'
+                collection_ref.document(doc_id).set({'courses': chunk})
+                chunk_index += 1
+                # Start a new chunk with the current course.
+                chunk = [course]
+            else:
+                chunk = temp_chunk
+        
+        # Upload any remaining courses.
+        if chunk:
+            doc_id = f'chunk_{chunk_index}'
+            collection_ref.document(doc_id).set({'courses': chunk})
+        
+        print("Data uploaded to Firestore successfully in chunks!")
     except Exception as e:
         print("Failed to upload data to Firestore:", e)
 
