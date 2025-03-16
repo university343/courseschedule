@@ -34,15 +34,3 @@ jobs:
 
       - name: Run scraping script
         run: python script.py
-
-      - name: Commit changes if course_data.json has been updated
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add course_data.json
-          git commit -m "Update course_data.json" || echo "No changes to commit"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
