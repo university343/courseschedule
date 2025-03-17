@@ -24,6 +24,12 @@ document.head.appendChild(css);
 # Create a lock to ensure that driver installation is not done concurrently
 driver_install_lock = threading.Lock()
 
+# Set a unique prefix for this scraping program.
+# For example, for Summer Courses (Friday) you might use "summer_",
+# for Next Year Fall-Winter (Saturday) use "next_fall_winter_",
+# and for This Year Fall-Winter (Sunday) use "this_fall_winter_".
+PREFIX = "next_fall_winter_"  # Change this accordingly.
+
 def click_next(driver, num_clicks=1):
     """Click the 'Next' link num_clicks times.
        Returns False if a click fails (no more pages)."""
@@ -53,7 +59,6 @@ def process_pages(thread_index, total_threads=5):
       - Scrapes the current page (expanding accordions first),
         then clicks 'Next' and jumps ahead (total_threads pages per cycle).
     """
-    # Configure Selenium for headless operation with extra options for GitHub Actions
     options = Options()
     options.add_argument("--headless=new")  # new headless mode, more stable
     options.add_argument("--no-sandbox")
@@ -61,19 +66,15 @@ def process_pages(thread_index, total_threads=5):
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
     
-    # Import ChromeDriverManager
     from webdriver_manager.chrome import ChromeDriverManager
-
-    # Ensure only one thread installs the driver at a time
     with driver_install_lock:
         driver_path = ChromeDriverManager().install()
     driver = webdriver.Chrome(service=Service(driver_path), options=options)
     
-    # Load the page and disable animations
     driver.get(URL)
     driver.execute_script(DISABLE_ANIMATIONS_JS)
     
-    # Wait for the division dropdown and its custom options to appear
+    # Wait for division dropdown options and select them.
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "division"))
     )
@@ -90,8 +91,9 @@ def process_pages(thread_index, total_threads=5):
         driver.execute_script("arguments[0].scrollIntoView(true);", option)
         driver.execute_script("arguments[0].click();", option)
         time.sleep(0.1)
-
-    WebDriverWait(driver, 10).until(
+    
+    # Wait for session dropdown options and select them.
+        WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.ID, "session"))
     )
     WebDriverWait(driver, 10).until(
@@ -105,43 +107,38 @@ def process_pages(thread_index, total_threads=5):
         driver.execute_script("arguments[0].scrollIntoView(true);", option)
         driver.execute_script("arguments[0].click();", option)
         time.sleep(0.5)
-
-    
-    # Click the Search button
+        
+    # Click the Search button.
     search_button = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Search']"))
     )
     driver.execute_script("arguments[0].scrollIntoView(true);", search_button)
     driver.execute_script("arguments[0].click();", search_button)
-
-        # Check if the "No results found" error message appears
+    
+    # Check if the "No results found" message appears.
     try:
         WebDriverWait(driver, 5).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div.alert-info.results-error-info"))
         )
         print("No results found. Exiting search.")
         driver.quit()
-        return []
+        return []  # Exit immediately if no results.
     except Exception:
         # If the error message is not found within 5 seconds, continue.
         pass
-    
-    # Wait for course elements to load
-    WebDriverWait(driver, 10).until(
+
+    # Wait for course elements to load.
+    WebDriverWait(driver, 20).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "app-course"))
     )
     
-    # Advance to the starting page based on thread_index:
-    # thread 0 stays on page 1, thread 1 clicks Next once to reach page 2, etc.
+    # Advance to the starting page based on thread_index.
     for i in range(thread_index):
         if not click_next(driver, 1):
             break
     
     thread_data = []
-    
-    # Process pages until there are no more
     while True:
-        # Expand all accordion buttons so that course details are visible
         accordion_buttons = driver.find_elements(By.CSS_SELECTOR, "button.accordion-button")
         for button in accordion_buttons:
             try:
@@ -152,7 +149,6 @@ def process_pages(thread_index, total_threads=5):
             except Exception as e:
                 print(f"Thread {thread_index}: Error clicking accordion button: {e}")
         
-        # Scrape the page using BeautifulSoup
         html = driver.page_source
         soup = BeautifulSoup(html, "html.parser")
         courses = soup.select("app-course")
@@ -206,7 +202,6 @@ def process_pages(thread_index, total_threads=5):
             })
         thread_data.extend(page_data)
         
-        # Check for the 'Next' page link and navigate if available
         next_page_links = driver.find_elements(
             By.XPATH,
             "//a[contains(@class, 'page-link') and normalize-space()='Next' and not(ancestor::li[contains(@class, 'disabled')])]"
@@ -214,7 +209,6 @@ def process_pages(thread_index, total_threads=5):
         if not next_page_links:
             break
         else:
-            # Click the 'Next' link once (this moves to the next page in the lane)
             next_page_link = next_page_links[0]
             driver.execute_script("arguments[0].scrollIntoView(true);", next_page_link)
             next_page_link.click()
@@ -222,7 +216,6 @@ def process_pages(thread_index, total_threads=5):
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "app-course"))
             )
-            # Then jump ahead by clicking 'Next' (total_threads - 1) more times to get to the next page for this thread
             if total_threads > 1:
                 if not click_next(driver, total_threads - 1):
                     break
@@ -233,17 +226,63 @@ def process_pages(thread_index, total_threads=5):
 def main():
     total_threads = 5
     all_course_data = []
-    # Run 5 threads in parallel using ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=total_threads) as executor:
         futures = [executor.submit(process_pages, i, total_threads) for i in range(total_threads)]
         for future in futures:
             all_course_data.extend(future.result())
     
-    # Save all collected data to a JSON file
+    # Save all collected data to a JSON file locally.
     with open('course_data.json', 'w') as f:
         json.dump(all_course_data, f, indent=4)
     
     print("Scraping complete! Data saved to course_data.json.")
+    
+    # Upload courses in chunks to Firestore, overwriting only documents from this program.
+    try:
+        import firebase_admin
+        from firebase_admin import credentials, firestore
+        from firebase_admin.firestore import FieldPath
+        # Initialize Firebase Admin with your service account key file
+        cred = credentials.Certificate("serviceAccountKey.json")
+        firebase_admin.initialize_app(cred)
+        
+        db = firestore.client()
+        collection_ref = db.collection('courses')
+        
+        # Delete existing documents that were uploaded by this program.
+        existing_docs = collection_ref.where(
+            FieldPath.documentId(), '>=', PREFIX
+        ).where(
+            FieldPath.documentId(), '<', PREFIX + '\uf8ff'
+        ).stream()
+        for doc in existing_docs:
+            doc.reference.delete()
+        
+        MAX_SIZE = 1048576  # 1 MiB in bytes
+        chunk = []
+        chunk_index = 1
+        
+        for course in all_course_data:
+            temp_chunk = chunk + [course]
+            temp_json = json.dumps(temp_chunk, indent=4)
+            size_bytes = len(temp_json.encode('utf-8'))
+            if size_bytes > MAX_SIZE:
+                # Upload the current chunk before adding the current course.
+                doc_id = f"{PREFIX}chunk_{chunk_index}"
+                collection_ref.document(doc_id).set({'courses': chunk})
+                chunk_index += 1
+                chunk = [course]
+            else:
+                chunk = temp_chunk
+        
+        # Upload any remaining courses.
+        if chunk:
+            doc_id = f"{PREFIX}chunk_{chunk_index}"
+            collection_ref.document(doc_id).set({'courses': chunk})
+        
+        print("Data uploaded to Firestore successfully in chunks!")
+    except Exception as e:
+        print("Failed to upload data to Firestore:", e)
 
 if __name__ == "__main__":
     main()
