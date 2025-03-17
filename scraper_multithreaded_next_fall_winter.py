@@ -250,14 +250,10 @@ def main():
         collection_ref = db.collection('courses')
         
         # Delete existing documents that were uploaded by this program.
-        # Assume your collection is named "courses"
-        collection_id = "courses"
-
-        existing_docs = collection_ref.where(
-            FieldPath.document_id(), '>=', f"{collection_id}/{PREFIX}"
-        ).where(
-            FieldPath.document_id(), '<', f"{collection_id}/{PREFIX}\uf8ff"
-        ).stream()
+        existing_docs = collection_ref.stream()
+        for doc in existing_docs:
+            if doc.id.startswith(PREFIX):
+                doc.reference.delete()
 
 
         for doc in existing_docs:
