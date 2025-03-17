@@ -111,7 +111,7 @@ def process_pages(thread_index, total_threads=5):
         driver.execute_script("arguments[0].click();", option)
         time.sleep(0.5)
         counter+=1
-        
+
     # Click the Search button.
     search_button = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Search']"))
@@ -245,7 +245,7 @@ def main():
     try:
         import firebase_admin
         from firebase_admin import credentials, firestore
-        from google.cloud.firestore_v1 import FieldPath  # Updated import
+        from google.cloud.firestore_v1.field_path import FieldPath  # Updated import
         # Initialize Firebase Admin with your service account key file
         cred = credentials.Certificate("serviceAccountKey.json")
         firebase_admin.initialize_app(cred)
