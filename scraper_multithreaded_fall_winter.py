@@ -235,13 +235,11 @@ def main():
         collection_ref = db.collection('courses')
         
         # Delete existing documents that were uploaded by this program.
-        existing_docs = collection_ref.where(
-            FieldPath.documentId(), '>=', PREFIX
-        ).where(
-            FieldPath.documentId(), '<', PREFIX + '\uf8ff'
-        ).stream()
+                # Delete existing documents that were uploaded by this program.
+        existing_docs = collection_ref.stream()
         for doc in existing_docs:
-            doc.reference.delete()
+            if doc.id.startswith(PREFIX):
+                doc.reference.delete()
         
         MAX_SIZE = 1048576  # 1 MiB in bytes
         chunk = []
